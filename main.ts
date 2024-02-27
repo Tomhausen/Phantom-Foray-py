@@ -128,8 +128,8 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.xp, function collect_xp(player: 
 })
 //  /gh2 
 sprites.onOverlap(SpriteKind.Enemy, SpriteKind.Projectile, function proj_hit_enemy(enemy: Sprite, proj: Sprite) {
-    damage_enemy(enemy, proj)
     proj.destroy()
+    damage_enemy(enemy, proj)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function damage_player(player: Sprite, enemy: Sprite) {
     health_bar.value -= 10

@@ -122,8 +122,8 @@ sprites.on_overlap(SpriteKind.player, SpriteKind.xp, collect_xp)
 # /gh2 
 
 def proj_hit_enemy(enemy, proj):
-    damage_enemy(enemy, proj)
     proj.destroy()
+    damage_enemy(enemy, proj)
 sprites.on_overlap(SpriteKind.enemy, SpriteKind.projectile, proj_hit_enemy)
 
 def damage_player(player, enemy):
