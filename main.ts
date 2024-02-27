@@ -92,8 +92,7 @@ function make_damage_number(damage: number, damaged_sprite: Sprite) {
     let number_sprite = textsprite.create("" + damage, 0, 15)
     number_sprite.setPosition(damaged_sprite.x, damaged_sprite.y)
     number_sprite.vy = -5
-    pause(1500)
-    number_sprite.destroy()
+    number_sprite.lifespan = 1500
 }
 
 //  /b1.2

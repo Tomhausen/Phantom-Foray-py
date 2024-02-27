@@ -92,8 +92,7 @@ def make_damage_number(damage: number, damaged_sprite: Sprite):
     number_sprite = textsprite.create(str(damage), 0, 15)
     number_sprite.set_position(damaged_sprite.x, damaged_sprite.y)
     number_sprite.vy = -5
-    pause(1500)
-    number_sprite.destroy()
+    number_sprite.lifespan = 1500
 # /b1.2
 
 def damage_enemy(enemy, proj):
