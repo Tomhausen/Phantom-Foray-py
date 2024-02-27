@@ -1,0 +1,38 @@
+{
+    "name": "with music",
+    "description": "",
+    "dependencies": {
+        "device": "*",
+        "Tiles Advanced": "github:Tomhausen/The-Code-Zone-Tiles-Advanced#v0.5.6",
+        "Timers": "github:microsoft/arcade-timers#v1.1.0",
+        "pxt-status-bar": "github:jwunderl/pxt-status-bar#v0.4.2",
+        "arcade-sprite-data": "github:microsoft/arcade-sprite-data#v0.2.1",
+        "arcade-text": "github:microsoft/arcade-text#v1.3.0",
+        "Menu Extension": "github:tomhausen/menu-extension#v0.0.3",
+        "Sprites Advanced": "github:tomhausen/sprites-advanced#b83a2c0b45c4d36983e911c933132b1e90fc3a71",
+        "arcade-character-animations": "github:microsoft/arcade-character-animations#v0.0.2"
+    },
+    "files": [
+        "main.blocks",
+        "main.ts",
+        "README.md",
+        "assets.json",
+        "main.py",
+        "tilemap.g.jres",
+        "tilemap.g.ts",
+        "images.g.jres",
+        "images.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "targetVersions": {
+        "target": "1.13.53",
+        "pxt": "8.5.2",
+        "targetId": "arcade"
+    },
+    "supportedTargets": [
+        "arcade"
+    ],
+    "preferredEditor": "pyprj"
+}
