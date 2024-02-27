@@ -32,10 +32,21 @@ enemies_spawn = 2
 
 # menu
 menu_upgrades = [
-    miniMenu.create_menu_item("hp"), 
+    miniMenu.create_menu_item("hp"),
     miniMenu.create_menu_item("attack damage"),
     miniMenu.create_menu_item("cooldown"),
+# gh1
+    miniMenu.create_menu_item("ranged attack"),
+# /gh1
 ]
+
+# gh1
+def remove_upgrade_from_list(item_text):
+    for item in menu_upgrades:
+        text = miniMenu.get_menu_item_property(item, MenuItemProperty.Text)
+        if text == item_text:
+            menu_upgrades.remove_element(item)
+# /gh1
 
 def open_level_up_menu():
     upgrades = []
@@ -58,6 +69,11 @@ def select_upgrade(selection, selectionIndex):
     elif selection == "cooldown":
         cooldown *= 0.95
         cooldown = Math.constrain(cooldown, 500, 5000)
+# gh1
+    elif selection == "ranged attack":
+        remove_upgrade_from_list("ranged attack")
+        ranged_attack_loop()
+# /gh1
     sprites.all_of_kind(SpriteKind.mini_menu)[0].destroy()
 
 def damage_enemy(enemy, proj):
@@ -72,12 +88,31 @@ def damage_enemy(enemy, proj):
             open_level_up_menu()
 sprites.on_overlap(SpriteKind.enemy, SpriteKind.melee, damage_enemy)
 
+# gh1
+def proj_hit_enemy(enemy, proj):
+    damage_enemy(enemy, proj)
+    proj.destroy()
+sprites.on_overlap(SpriteKind.enemy, SpriteKind.projectile, proj_hit_enemy)
+# /gh1
+
 def damage_player(player, enemy):
     health_bar.value -= 10
     if health_bar.value < 1:
         game.over(False)
     pause(500)
 sprites.on_overlap(SpriteKind.player, SpriteKind.enemy, damage_player)
+
+# gh1
+def ranged_attack_loop():
+    proj = sprites.create(assets.image("proj"), SpriteKind.projectile)
+    proj.set_position(witch.x, witch.y)
+    proj.lifespan = 5000
+    enemies = sprites.all_of_kind(SpriteKind.enemy)
+    target = spriteutils.sort_list_of_sprites_by_distance_from(witch, enemies)[0]
+    angle = spriteutils.angle_from(witch, target)
+    spriteutils.set_velocity_at_angle(proj, angle, 200)
+    timer.after(cooldown, ranged_attack_loop)
+# /gh1
 
 def base_attack_loop():
     if last_vx > 0:

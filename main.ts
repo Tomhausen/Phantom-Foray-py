@@ -26,7 +26,22 @@ let enemy_health = 5
 let enemy_damage = 10
 let enemies_spawn = 2
 //  menu
-let menu_upgrades = [miniMenu.createMenuItem("hp"), miniMenu.createMenuItem("attack damage"), miniMenu.createMenuItem("cooldown")]
+let menu_upgrades = [miniMenu.createMenuItem("hp"), miniMenu.createMenuItem("attack damage"), miniMenu.createMenuItem("cooldown"), miniMenu.createMenuItem("ranged attack")]
+//  gh1
+//  /gh1
+//  gh1
+function remove_upgrade_from_list(item_text: string) {
+    let text: any;
+    for (let item of menu_upgrades) {
+        text = miniMenu.getMenuItemProperty(item, MenuItemProperty.Text)
+        if (text == item_text) {
+            menu_upgrades.removeElement(item)
+        }
+        
+    }
+}
+
+//  /gh1
 function open_level_up_menu() {
     let upgrade: miniMenu.MenuItem;
     let upgrades = []
@@ -50,13 +65,18 @@ function open_level_up_menu() {
         } else if (selection == "cooldown") {
             cooldown *= 0.95
             cooldown = Math.constrain(cooldown, 500, 5000)
+        } else if (selection == "ranged attack") {
+            //  gh1
+            remove_upgrade_from_list("ranged attack")
+            ranged_attack_loop()
         }
         
+        //  /gh1
         sprites.allOfKind(SpriteKind.MiniMenu)[0].destroy()
     })
 }
 
-sprites.onOverlap(SpriteKind.Enemy, SpriteKind.melee, function damage_enemy(enemy: Sprite, proj: Sprite) {
+function damage_enemy(enemy: Sprite, proj: Sprite) {
     let damage = Math.idiv(randint(attack_damage * 0.75, attack_damage * 1.25), 1)
     sprites.changeDataNumberBy(enemy, "hp", -damage)
     if (sprites.readDataNumber(enemy, "hp") < 1) {
@@ -70,7 +90,15 @@ sprites.onOverlap(SpriteKind.Enemy, SpriteKind.melee, function damage_enemy(enem
         
     }
     
+}
+
+sprites.onOverlap(SpriteKind.Enemy, SpriteKind.melee, damage_enemy)
+//  gh1
+sprites.onOverlap(SpriteKind.Enemy, SpriteKind.Projectile, function proj_hit_enemy(enemy: Sprite, proj: Sprite) {
+    damage_enemy(enemy, proj)
+    proj.destroy()
 })
+//  /gh1
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function damage_player(player: Sprite, enemy: Sprite) {
     health_bar.value -= 10
     if (health_bar.value < 1) {
@@ -79,6 +107,19 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function damage_player(pl
     
     pause(500)
 })
+//  gh1
+function ranged_attack_loop() {
+    let proj = sprites.create(assets.image`proj`, SpriteKind.Projectile)
+    proj.setPosition(witch.x, witch.y)
+    proj.lifespan = 5000
+    let enemies = sprites.allOfKind(SpriteKind.Enemy)
+    let target = spriteutils.sortListOfSpritesByDistanceFrom(witch, enemies)[0]
+    let angle = spriteutils.angleFrom(witch, target)
+    spriteutils.setVelocityAtAngle(proj, angle, 200)
+    timer.after(cooldown, ranged_attack_loop)
+}
+
+//  /gh1
 function base_attack_loop() {
     if (last_vx > 0) {
         animation.runImageAnimation(melee_attack, assets.animation`fireball right`, 100, false)
