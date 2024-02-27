@@ -22,13 +22,18 @@ let last_vx = 100
 //  game properties
 let attack_damage = 10
 let cooldown = 2000
+//  b1.1
+let movement_speed = 100
+//  /b1.1
 let enemy_health = 5
 let enemy_damage = 10
 let enemies_spawn = 2
 //  menu
-let menu_upgrades = [miniMenu.createMenuItem("hp"), miniMenu.createMenuItem("attack damage"), miniMenu.createMenuItem("cooldown"), miniMenu.createMenuItem("ranged attack")]
+let menu_upgrades = [miniMenu.createMenuItem("hp"), miniMenu.createMenuItem("attack damage"), miniMenu.createMenuItem("cooldown"), miniMenu.createMenuItem("ranged attack"), miniMenu.createMenuItem("movement speed")]
 //  gh1
 //  /gh1
+//  b1.1
+//  /b1.1
 //  gh1
 function remove_upgrade_from_list(item_text: string) {
     let text: any;
@@ -57,6 +62,7 @@ function open_level_up_menu() {
     upgrade_menu.setFlag(SpriteFlag.RelativeToCamera, true)
     upgrade_menu.onButtonPressed(controller.A, function select_upgrade(selection: string, selectionIndex: number) {
         
+        //  b 1.2
         if (selection == "attack damage") {
             attack_damage += 10
         } else if (selection == "hp") {
@@ -69,16 +75,34 @@ function open_level_up_menu() {
             //  gh1
             remove_upgrade_from_list("ranged attack")
             ranged_attack_loop()
+        } else if (selection == "movement speed") {
+            //  /gh1
+            //  b1.1
+            movement_speed += 10
+            controller.moveSprite(witch, movement_speed, movement_speed)
         }
         
-        //  /gh1
+        //  /b1.1
         sprites.allOfKind(SpriteKind.MiniMenu)[0].destroy()
     })
 }
 
+//  b1.2
+function make_damage_number(damage: number, damaged_sprite: Sprite) {
+    let number_sprite = textsprite.create("" + damage, 0, 15)
+    number_sprite.setPosition(damaged_sprite.x, damaged_sprite.y)
+    number_sprite.vy = -5
+    pause(1500)
+    number_sprite.destroy()
+}
+
+//  /b1.2
 function damage_enemy(enemy: Sprite, proj: Sprite) {
     let damage = Math.idiv(randint(attack_damage * 0.75, attack_damage * 1.25), 1)
     sprites.changeDataNumberBy(enemy, "hp", -damage)
+    //  b1.2
+    make_damage_number(damage, enemy)
+    //  /b1.2
     if (sprites.readDataNumber(enemy, "hp") < 1) {
         enemy.destroy()
         info.changeScoreBy(100)
@@ -131,6 +155,14 @@ function base_attack_loop() {
 }
 
 timer.after(cooldown, base_attack_loop)
+//  b1.3
+game.onUpdateInterval(20000, function difficulty_curve() {
+    
+    enemy_health += 10
+    enemy_damage += 10
+    enemies_spawn += 1
+})
+//  /b1.3
 game.onUpdateInterval(1000, function spawn_loop() {
     let enemy: Sprite;
     if (sprites.allOfKind(SpriteKind.Enemy).length < 50) {

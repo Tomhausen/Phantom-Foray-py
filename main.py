@@ -26,6 +26,9 @@ last_vx = 100
 # game properties
 attack_damage = 10
 cooldown = 2000
+# b1.1
+movement_speed = 100
+# /b1.1
 enemy_health = 5
 enemy_damage = 10
 enemies_spawn = 2
@@ -38,6 +41,9 @@ menu_upgrades = [
 # gh1
     miniMenu.create_menu_item("ranged attack"),
 # /gh1
+# b1.1
+    miniMenu.create_menu_item("movement speed"),
+# /b1.1
 ]
 
 # gh1
@@ -60,7 +66,7 @@ def open_level_up_menu():
     upgrade_menu.on_button_pressed(controller.A, select_upgrade)
 
 def select_upgrade(selection, selectionIndex):
-    global attack_damage, cooldown
+    global attack_damage, cooldown, movement_speed # b 1.2
     if selection == "attack damage":
         attack_damage += 10
     elif selection == "hp":
@@ -74,11 +80,28 @@ def select_upgrade(selection, selectionIndex):
         remove_upgrade_from_list("ranged attack")
         ranged_attack_loop()
 # /gh1
+# b1.1
+    elif selection == "movement speed":
+        movement_speed += 10
+        controller.move_sprite(witch, movement_speed, movement_speed)
+# /b1.1
     sprites.all_of_kind(SpriteKind.mini_menu)[0].destroy()
+
+# b1.2
+def make_damage_number(damage: number, damaged_sprite: Sprite):
+    number_sprite = textsprite.create(str(damage), 0, 15)
+    number_sprite.set_position(damaged_sprite.x, damaged_sprite.y)
+    number_sprite.vy = -5
+    pause(1500)
+    number_sprite.destroy()
+# /b1.2
 
 def damage_enemy(enemy, proj):
     damage = randint(attack_damage * 0.75, attack_damage * 1.25) // 1
     sprites.change_data_number_by(enemy, "hp", -damage)
+# b1.2
+    make_damage_number(damage, enemy)
+# /b1.2
     if sprites.read_data_number(enemy, "hp") < 1:
         enemy.destroy()
         info.change_score_by(100)
@@ -121,6 +144,15 @@ def base_attack_loop():
         animation.run_image_animation(melee_attack, assets.animation("fireball left"), 100, False)
     timer.after(cooldown, base_attack_loop)
 timer.after(cooldown, base_attack_loop)
+
+# b1.3
+def difficulty_curve():
+    global enemy_health, enemy_damage, enemies_spawn
+    enemy_health += 10
+    enemy_damage += 10
+    enemies_spawn += 1
+game.on_update_interval(20000, difficulty_curve)
+# /b1.3
 
 def spawn_loop():
     if len(sprites.all_of_kind(SpriteKind.enemy)) < 50:
