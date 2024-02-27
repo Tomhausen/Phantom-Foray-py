@@ -27,7 +27,7 @@ xp_bar.value = 0
 last_vx = 100
 
 # game properties
-attack_damage = 10
+attack_damage = 20
 cooldown = 2000
 movement_speed = 100
 enemy_health = 5

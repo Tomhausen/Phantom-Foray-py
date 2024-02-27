@@ -23,7 +23,7 @@ xp_bar.value = 0
 //  variables
 let last_vx = 100
 //  game properties
-let attack_damage = 10
+let attack_damage = 20
 let cooldown = 2000
 let movement_speed = 100
 let enemy_health = 5
