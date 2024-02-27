@@ -19,6 +19,16 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "ghost left"
     },
+    "image3": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMzMzMwAAADAqqqqqgwAAKysqqrKygDAqsrMzKyqDKyqrKqqyqrKrKqsqqrKqsrAqsrMzKyqDACsrKqqysoAAMCqqqqqDAAAAMzMzMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "jewel"
+    },
+    "image6": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAIAAAAAAABURQAAAAAAIFVVAgAAAAAgVVUCAAAAAABURQAAAAAAACACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "proj"
+    },
     "anim2": {
         "namespace": "myAnimations",
         "id": "anim2",

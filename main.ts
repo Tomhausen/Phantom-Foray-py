@@ -1,7 +1,10 @@
 namespace SpriteKind {
     export const melee = SpriteKind.create()
+    //  gh2
+    export const xp = SpriteKind.create()
 }
 
+//  /gh2
 //  setup
 scene.setTileMapLevel(assets.tilemap`level`)
 //  sprites
@@ -22,19 +25,12 @@ let last_vx = 100
 //  game properties
 let attack_damage = 10
 let cooldown = 2000
-//  b1.1
 let movement_speed = 100
-//  /b1.1
 let enemy_health = 5
 let enemy_damage = 10
 let enemies_spawn = 2
 //  menu
 let menu_upgrades = [miniMenu.createMenuItem("hp"), miniMenu.createMenuItem("attack damage"), miniMenu.createMenuItem("cooldown"), miniMenu.createMenuItem("ranged attack"), miniMenu.createMenuItem("movement speed")]
-//  gh1
-//  /gh1
-//  b1.1
-//  /b1.1
-//  gh1
 function remove_upgrade_from_list(item_text: string) {
     let text: any;
     for (let item of menu_upgrades) {
@@ -46,7 +42,6 @@ function remove_upgrade_from_list(item_text: string) {
     }
 }
 
-//  /gh1
 function open_level_up_menu() {
     let upgrade: miniMenu.MenuItem;
     let upgrades = []
@@ -72,22 +67,17 @@ function open_level_up_menu() {
             cooldown *= 0.95
             cooldown = Math.constrain(cooldown, 500, 5000)
         } else if (selection == "ranged attack") {
-            //  gh1
             remove_upgrade_from_list("ranged attack")
             ranged_attack_loop()
         } else if (selection == "movement speed") {
-            //  /gh1
-            //  b1.1
             movement_speed += 10
             controller.moveSprite(witch, movement_speed, movement_speed)
         }
         
-        //  /b1.1
         sprites.allOfKind(SpriteKind.MiniMenu)[0].destroy()
     })
 }
 
-//  b1.2
 function make_damage_number(damage: number, damaged_sprite: Sprite) {
     let number_sprite = textsprite.create("" + damage, 0, 15)
     number_sprite.setPosition(damaged_sprite.x, damaged_sprite.y)
@@ -95,33 +85,52 @@ function make_damage_number(damage: number, damaged_sprite: Sprite) {
     number_sprite.lifespan = 1500
 }
 
-//  /b1.2
+//  gh2
+function spawn_xp(source: Sprite) {
+    let xp = sprites.create(assets.image`jewel`, SpriteKind.xp)
+    xp.setPosition(source.x, source.y)
+    xp.x += randint(-10, 10)
+    xp.y += randint(-10, 10)
+    xp.scale = 0.75
+    xp.lifespan = 10000
+}
+
+//  /gh2
 function damage_enemy(enemy: Sprite, proj: Sprite) {
     let damage = Math.idiv(randint(attack_damage * 0.75, attack_damage * 1.25), 1)
     sprites.changeDataNumberBy(enemy, "hp", -damage)
-    //  b1.2
     make_damage_number(damage, enemy)
-    //  /b1.2
     if (sprites.readDataNumber(enemy, "hp") < 1) {
         enemy.destroy()
         info.changeScoreBy(100)
-        xp_bar.value += 10
-        if (xp_bar.value == 100) {
-            xp_bar.value = 0
-            open_level_up_menu()
-        }
-        
+        //  gh2
+        spawn_xp(enemy)
     }
     
+    //  xp_bar.value += 10
+    //  if xp_bar.value == 100:
+    //      xp_bar.value = 0
+    //      open_level_up_menu()
+    //  /gh2
+    pause(500)
 }
 
 sprites.onOverlap(SpriteKind.Enemy, SpriteKind.melee, damage_enemy)
-//  gh1
+//  gh2
+sprites.onOverlap(SpriteKind.Player, SpriteKind.xp, function collect_xp(player: Sprite, xp: Sprite) {
+    xp_bar.value += 10
+    if (xp_bar.value == 100) {
+        xp_bar.value = 0
+        open_level_up_menu()
+    }
+    
+    xp.destroy()
+})
+//  /gh2 
 sprites.onOverlap(SpriteKind.Enemy, SpriteKind.Projectile, function proj_hit_enemy(enemy: Sprite, proj: Sprite) {
     damage_enemy(enemy, proj)
     proj.destroy()
 })
-//  /gh1
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function damage_player(player: Sprite, enemy: Sprite) {
     health_bar.value -= 10
     if (health_bar.value < 1) {
@@ -130,7 +139,6 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function damage_player(pl
     
     pause(500)
 })
-//  gh1
 function ranged_attack_loop() {
     let proj = sprites.create(assets.image`proj`, SpriteKind.Projectile)
     proj.setPosition(witch.x, witch.y)
@@ -142,7 +150,6 @@ function ranged_attack_loop() {
     timer.after(cooldown, ranged_attack_loop)
 }
 
-//  /gh1
 function base_attack_loop() {
     if (last_vx > 0) {
         animation.runImageAnimation(melee_attack, assets.animation`fireball right`, 100, false)
@@ -154,14 +161,12 @@ function base_attack_loop() {
 }
 
 timer.after(cooldown, base_attack_loop)
-//  b1.3
 game.onUpdateInterval(20000, function difficulty_curve() {
     
     enemy_health += 10
     enemy_damage += 10
     enemies_spawn += 1
 })
-//  /b1.3
 game.onUpdateInterval(1000, function spawn_loop() {
     let enemy: Sprite;
     if (sprites.allOfKind(SpriteKind.Enemy).length < 50) {
