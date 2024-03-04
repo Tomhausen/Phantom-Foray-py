@@ -10,6 +10,10 @@ scene.setTileMapLevel(assets.tilemap`level`)
 //  sprites
 let witch = sprites.create(assets.image`witch`, SpriteKind.Player)
 controller.moveSprite(witch)
+//  b2.1
+let anim = assets.animation`walking`
+characterAnimations.loopFrames(witch, anim, 100, characterAnimations.rule(Predicate.Moving))
+//  /b2.1
 scene.cameraFollowSprite(witch)
 let melee_attack = sprites.create(image.create(16, 16), SpriteKind.melee)
 melee_attack.scale = 2
@@ -29,8 +33,13 @@ let movement_speed = 100
 let enemy_health = 5
 let enemy_damage = 10
 let enemies_spawn = 2
+//  b2.3
+let magnet_active = false
+//  /b2.3
 //  menu
-let menu_upgrades = [miniMenu.createMenuItem("hp"), miniMenu.createMenuItem("attack damage"), miniMenu.createMenuItem("cooldown"), miniMenu.createMenuItem("ranged attack"), miniMenu.createMenuItem("movement speed")]
+let menu_upgrades = [miniMenu.createMenuItem("hp"), miniMenu.createMenuItem("attack damage"), miniMenu.createMenuItem("cooldown"), miniMenu.createMenuItem("ranged attack"), miniMenu.createMenuItem("movement speed"), miniMenu.createMenuItem("damage range")]
+//  b2.2
+//  /b2.2
 function remove_upgrade_from_list(item_text: string) {
     let text: any;
     for (let item of menu_upgrades) {
@@ -57,7 +66,6 @@ function open_level_up_menu() {
     upgrade_menu.setFlag(SpriteFlag.RelativeToCamera, true)
     upgrade_menu.onButtonPressed(controller.A, function select_upgrade(selection: string, selectionIndex: number) {
         
-        //  b 1.2
         if (selection == "attack damage") {
             attack_damage += 10
         } else if (selection == "hp") {
@@ -72,8 +80,12 @@ function open_level_up_menu() {
         } else if (selection == "movement speed") {
             movement_speed += 10
             controller.moveSprite(witch, movement_speed, movement_speed)
+        } else if (selection == "damage range") {
+            //  b2.2
+            melee_attack.scale += 0.2
         }
         
+        //  /b2.2
         sprites.allOfKind(SpriteKind.MiniMenu)[0].destroy()
     })
 }
@@ -85,8 +97,22 @@ function make_damage_number(damage: number, damaged_sprite: Sprite) {
     number_sprite.lifespan = 1500
 }
 
+//  b2.3
+//  /b2.3
 //  gh2
 function spawn_xp(source: Sprite) {
+    //  b2.3
+    
+    if (randint(1, 10) == 1) {
+        magnet_active = true
+        witch.startEffect(effects.halo, 5000)
+        timer.after(5000, function turn_off_magnet() {
+            
+            magnet_active = false
+        })
+    }
+    
+    //  /b2.3
     let xp = sprites.create(assets.image`jewel`, SpriteKind.xp)
     xp.setPosition(source.x, source.y)
     xp.x += randint(-10, 10)
@@ -179,6 +205,20 @@ game.onUpdateInterval(1000, function spawn_loop() {
     }
     
 })
+//  b2.1
+function ghost_direction() {
+    for (let ghost of sprites.allOfKind(SpriteKind.Enemy)) {
+        if (ghost.vx > 0) {
+            ghost.setImage(assets.image`ghost right`)
+        } else {
+            ghost.setImage(assets.image`ghost left`)
+        }
+        
+    }
+}
+
+//  /b2.1
+//  /b2.3
 game.onUpdate(function tick() {
     
     if (Math.abs(witch.vx) != 0) {
@@ -186,4 +226,14 @@ game.onUpdate(function tick() {
     }
     
     melee_attack.setPosition(witch.x, witch.y)
+    //  b2.1
+    ghost_direction()
+    //  /b2.1
+    //  b2.3
+    for (let xp of sprites.allOfKind(SpriteKind.xp)) {
+        if (spriteutils.distanceBetween(xp, witch) < 100 && magnet_active) {
+            xp.follow(witch, 200)
+        }
+        
+    }
 })
