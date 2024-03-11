@@ -14,6 +14,10 @@ characterAnimations.loop_frames(witch, anim, 100, characterAnimations.rule(Predi
 scene.camera_follow_sprite(witch)
 melee_attack = sprites.create(image.create(16, 16), SpriteKind.melee)
 melee_attack.scale = 2
+# gh3
+aura = sprites.create(image.create(16, 16), SpriteKind.melee)
+sprites.set_data_number(aura, "angle", 0)
+# /gh3
 
 # bars
 health_bar = statusbars.create(60, 4, StatusBarKind.Health)
@@ -43,6 +47,12 @@ menu_upgrades = [
     miniMenu.create_menu_item("ranged attack"),
     miniMenu.create_menu_item("movement speed"),
     miniMenu.create_menu_item("damage range"),
+# gh3
+    miniMenu.create_menu_item("aura"),
+# /gh3
+# bh 3.1
+    miniMenu.create_menu_item("dual attack")
+# /bh 3.1
 ]
 
 def remove_upgrade_from_list(item_text):
@@ -61,6 +71,13 @@ def open_level_up_menu():
     upgrade_menu = miniMenu.createMenuFromArrayAndPauseGame(upgrades)
     upgrade_menu.set_flag(SpriteFlag.RELATIVE_TO_CAMERA, True)
     upgrade_menu.on_button_pressed(controller.A, select_upgrade)
+# bh 2.1
+    level_up_message = textsprite.create("LEVEL UP", 1, 15)
+    level_up_message.set_max_font_height(10)
+    level_up_message.set_position(80, 20)
+    level_up_message.set_border(3, 1)
+    effects.confetti.start_screen_effect()
+# /bh 2.1
 
 def select_upgrade(selection, selectionIndex):
     global attack_damage, cooldown, movement_speed
@@ -80,7 +97,20 @@ def select_upgrade(selection, selectionIndex):
         controller.move_sprite(witch, movement_speed, movement_speed)
     elif selection == "damage range":
         melee_attack.scale += 0.2
+# gh3
+    elif selection == "aura":
+        remove_upgrade_from_list("aura")
+        aura.set_image(assets.image("aura"))
+# /gh3
+# bh 3.2
+    elif selection == "dual attack":
+        remove_upgrade_from_list("dual attack")
+# /bh 3.2
     sprites.all_of_kind(SpriteKind.mini_menu)[0].destroy()
+# bh 2.2
+    sprites.all_of_kind(SpriteKind.text)[0].destroy()
+    effects.confetti.end_screen_effect()
+# /bh 2.2
 
 def make_damage_number(damage: number, damaged_sprite: Sprite):
     number_sprite = textsprite.create(str(damage), 0, 15)
@@ -113,12 +143,20 @@ def damage_enemy(enemy, proj):
         enemy.destroy()
         info.change_score_by(100)
         spawn_xp(enemy)
-        # xp_bar.value += 10
-        # if xp_bar.value == 100:
-        #     xp_bar.value = 0
-        #     open_level_up_menu()
+# bh 1.1
+        if randint(1, 10) == 1:
+            heart = sprites.create(assets.image("heart"), SpriteKind.food)
+            heart.set_position(enemy.x, enemy.y)
+# /bh 1.1
     pause(500)
 sprites.on_overlap(SpriteKind.enemy, SpriteKind.melee, damage_enemy)
+
+# bh 1.2
+def collect_heart(player, heart):
+    health_bar.value += health_bar.max / 2
+    heart.destroy()
+sprites.on_overlap(SpriteKind.player, SpriteKind.food, collect_heart)
+# /bh 1.2
 
 def collect_xp(player, xp):
     xp_bar.value += 10
@@ -150,7 +188,20 @@ def ranged_attack_loop():
     spriteutils.set_velocity_at_angle(proj, angle, 200)
     timer.after(cooldown, ranged_attack_loop)
 
+# bh 3.3
+def dual_attack_loop():
+    animation.run_image_animation(melee_attack, assets.animation("fireball both"), 100, False)
+    timer.after(cooldown, dual_attack_loop)
+# /bh 3.3
+
 def base_attack_loop():
+#bh 3.4
+    for item in menu_upgrades:
+        text = miniMenu.get_menu_item_property(item, MenuItemProperty.Text)
+        if text == "dual attack":
+            timer.after(cooldown, dual_attack_loop)
+            return
+# /bh 3.4
     if last_vx > 0:
         animation.run_image_animation(melee_attack, assets.animation("fireball right"), 100, False)
     else:
@@ -181,13 +232,27 @@ def ghost_direction():
         else:
             ghost.set_image(assets.image("ghost left"))
 
+def pull_in_xp():
+    for xp in sprites.all_of_kind(SpriteKind.xp):
+        if spriteutils.distance_between(xp, witch) < 100 and magnet_active:
+            xp.follow(witch, 200)
+
+# gh3
+def aura_turn():
+    sprites.change_data_number_by(aura, "angle", 5)
+    angle = sprites.read_data_number(aura, "angle")
+    angle = spriteutils.degrees_to_radians(angle)
+    spriteutils.place_angle_from(aura, angle, 20, witch)
+# /gh3 
+
 def tick():
     global last_vx
     if Math.abs(witch.vx) != 0:
         last_vx = witch.vx
     melee_attack.set_position(witch.x, witch.y)
     ghost_direction()
-    for xp in sprites.all_of_kind(SpriteKind.xp):
-        if spriteutils.distance_between(xp, witch) < 100 and magnet_active:
-            xp.follow(witch, 200)
+    pull_in_xp()
+# gh3
+    aura_turn()
+# /gh3
 game.on_update(tick)

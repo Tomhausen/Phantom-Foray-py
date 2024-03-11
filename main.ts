@@ -13,6 +13,10 @@ characterAnimations.loopFrames(witch, anim, 100, characterAnimations.rule(Predic
 scene.cameraFollowSprite(witch)
 let melee_attack = sprites.create(image.create(16, 16), SpriteKind.melee)
 melee_attack.scale = 2
+//  gh3
+let aura = sprites.create(image.create(16, 16), SpriteKind.melee)
+sprites.setDataNumber(aura, "angle", 0)
+//  /gh3
 //  bars
 let health_bar = statusbars.create(60, 4, StatusBarKind.Health)
 health_bar.left = 0
@@ -31,7 +35,11 @@ let enemy_damage = 10
 let enemies_spawn = 2
 let magnet_active = false
 //  menu
-let menu_upgrades = [miniMenu.createMenuItem("hp"), miniMenu.createMenuItem("attack damage"), miniMenu.createMenuItem("cooldown"), miniMenu.createMenuItem("ranged attack"), miniMenu.createMenuItem("movement speed"), miniMenu.createMenuItem("damage range")]
+let menu_upgrades = [miniMenu.createMenuItem("hp"), miniMenu.createMenuItem("attack damage"), miniMenu.createMenuItem("cooldown"), miniMenu.createMenuItem("ranged attack"), miniMenu.createMenuItem("movement speed"), miniMenu.createMenuItem("damage range"), miniMenu.createMenuItem("aura"), miniMenu.createMenuItem("dual attack")]
+//  gh3
+//  /gh3
+//  bh 3.1
+//  /bh 3.1
 function remove_upgrade_from_list(item_text: string) {
     let text: any;
     for (let item of menu_upgrades) {
@@ -74,12 +82,32 @@ function open_level_up_menu() {
             controller.moveSprite(witch, movement_speed, movement_speed)
         } else if (selection == "damage range") {
             melee_attack.scale += 0.2
+        } else if (selection == "aura") {
+            //  gh3
+            remove_upgrade_from_list("aura")
+            aura.setImage(assets.image`aura`)
+        } else if (selection == "dual attack") {
+            //  /gh3
+            //  bh 3.2
+            remove_upgrade_from_list("dual attack")
         }
         
+        //  /bh 3.2
         sprites.allOfKind(SpriteKind.MiniMenu)[0].destroy()
+        //  bh 2.2
+        sprites.allOfKind(SpriteKind.Text)[0].destroy()
+        effects.confetti.endScreenEffect()
     })
+    //  bh 2.1
+    let level_up_message = textsprite.create("LEVEL UP", 1, 15)
+    level_up_message.setMaxFontHeight(10)
+    level_up_message.setPosition(80, 20)
+    level_up_message.setBorder(3, 1)
+    effects.confetti.startScreenEffect()
 }
 
+//  /bh 2.1
+//  /bh 2.2
 function make_damage_number(damage: number, damaged_sprite: Sprite) {
     let number_sprite = textsprite.create("" + damage, 0, 15)
     number_sprite.setPosition(damaged_sprite.x, damaged_sprite.y)
@@ -107,6 +135,7 @@ function spawn_xp(source: Sprite) {
 }
 
 function damage_enemy(enemy: Sprite, proj: Sprite) {
+    let heart: Sprite;
     let damage = Math.idiv(randint(attack_damage * 0.75, attack_damage * 1.25), 1)
     sprites.changeDataNumberBy(enemy, "hp", -damage)
     make_damage_number(damage, enemy)
@@ -114,16 +143,25 @@ function damage_enemy(enemy: Sprite, proj: Sprite) {
         enemy.destroy()
         info.changeScoreBy(100)
         spawn_xp(enemy)
+        //  bh 1.1
+        if (randint(1, 10) == 1) {
+            heart = sprites.create(assets.image`heart`, SpriteKind.Food)
+            heart.setPosition(enemy.x, enemy.y)
+        }
+        
     }
     
-    //  xp_bar.value += 10
-    //  if xp_bar.value == 100:
-    //      xp_bar.value = 0
-    //      open_level_up_menu()
+    //  /bh 1.1
     pause(500)
 }
 
 sprites.onOverlap(SpriteKind.Enemy, SpriteKind.melee, damage_enemy)
+//  bh 1.2
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function collect_heart(player: Sprite, heart: Sprite) {
+    health_bar.value += health_bar.max / 2
+    heart.destroy()
+})
+//  /bh 1.2
 sprites.onOverlap(SpriteKind.Player, SpriteKind.xp, function collect_xp(player: Sprite, xp: Sprite) {
     xp_bar.value += 10
     if (xp_bar.value == 100) {
@@ -156,7 +194,25 @@ function ranged_attack_loop() {
     timer.after(cooldown, ranged_attack_loop)
 }
 
+//  bh 3.3
+function dual_attack_loop() {
+    animation.runImageAnimation(melee_attack, assets.animation`fireball both`, 100, false)
+    timer.after(cooldown, dual_attack_loop)
+}
+
+//  /bh 3.3
 function base_attack_loop() {
+    let text: any;
+    // bh 3.4
+    for (let item of menu_upgrades) {
+        text = miniMenu.getMenuItemProperty(item, MenuItemProperty.Text)
+        if (text == "dual attack") {
+            timer.after(cooldown, dual_attack_loop)
+            return
+        }
+        
+    }
+    //  /bh 3.4
     if (last_vx > 0) {
         animation.runImageAnimation(melee_attack, assets.animation`fireball right`, 100, false)
     } else {
@@ -196,6 +252,25 @@ function ghost_direction() {
     }
 }
 
+function pull_in_xp() {
+    for (let xp of sprites.allOfKind(SpriteKind.xp)) {
+        if (spriteutils.distanceBetween(xp, witch) < 100 && magnet_active) {
+            xp.follow(witch, 200)
+        }
+        
+    }
+}
+
+//  gh3
+function aura_turn() {
+    sprites.changeDataNumberBy(aura, "angle", 5)
+    let angle = sprites.readDataNumber(aura, "angle")
+    angle = spriteutils.degreesToRadians(angle)
+    spriteutils.placeAngleFrom(aura, angle, 20, witch)
+}
+
+//  /gh3 
+//  /gh3
 game.onUpdate(function tick() {
     
     if (Math.abs(witch.vx) != 0) {
@@ -204,10 +279,7 @@ game.onUpdate(function tick() {
     
     melee_attack.setPosition(witch.x, witch.y)
     ghost_direction()
-    for (let xp of sprites.allOfKind(SpriteKind.xp)) {
-        if (spriteutils.distanceBetween(xp, witch) < 100 && magnet_active) {
-            xp.follow(witch, 200)
-        }
-        
-    }
+    pull_in_xp()
+    //  gh3
+    aura_turn()
 })

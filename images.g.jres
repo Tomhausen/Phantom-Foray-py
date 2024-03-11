@@ -29,6 +29,16 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "proj"
     },
+    "image7": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIiIAAAAAACIiIiIAAAAgIkIkIgIAACBCREQkAgAAIkJURSQiAAAiRFVVRCIAACJEVVVEIgAAIkJURSQiAAAgQkREJAIAACAiQiQiAgAAACIiIiIAAAAAACIiAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "aura"
+    },
+    "image8": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAPD//w8AAAAA/zMz/wAAAAA/MzPzDwAAAD8zMzP/AAAAPzMzs/sPAAD/MzO7u/8AAPA/M7u7+wAA/zMzu7v/AAA/EzGz+w8AAD8TMTP/AAAAPzMz8w8AAAD/MzP/AAAAAPD//w8AAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "heart"
+    },
     "anim2": {
         "namespace": "myAnimations",
         "id": "anim2",
