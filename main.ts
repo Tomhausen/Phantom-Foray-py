@@ -1,19 +1,15 @@
 namespace SpriteKind {
     export const melee = SpriteKind.create()
-    //  gh2
     export const xp = SpriteKind.create()
 }
 
-//  /gh2
 //  setup
 scene.setTileMapLevel(assets.tilemap`level`)
 //  sprites
 let witch = sprites.create(assets.image`witch`, SpriteKind.Player)
 controller.moveSprite(witch)
-//  b2.1
 let anim = assets.animation`walking`
 characterAnimations.loopFrames(witch, anim, 100, characterAnimations.rule(Predicate.Moving))
-//  /b2.1
 scene.cameraFollowSprite(witch)
 let melee_attack = sprites.create(image.create(16, 16), SpriteKind.melee)
 melee_attack.scale = 2
@@ -33,13 +29,9 @@ let movement_speed = 100
 let enemy_health = 5
 let enemy_damage = 10
 let enemies_spawn = 2
-//  b2.3
 let magnet_active = false
-//  /b2.3
 //  menu
 let menu_upgrades = [miniMenu.createMenuItem("hp"), miniMenu.createMenuItem("attack damage"), miniMenu.createMenuItem("cooldown"), miniMenu.createMenuItem("ranged attack"), miniMenu.createMenuItem("movement speed"), miniMenu.createMenuItem("damage range")]
-//  b2.2
-//  /b2.2
 function remove_upgrade_from_list(item_text: string) {
     let text: any;
     for (let item of menu_upgrades) {
@@ -81,11 +73,9 @@ function open_level_up_menu() {
             movement_speed += 10
             controller.moveSprite(witch, movement_speed, movement_speed)
         } else if (selection == "damage range") {
-            //  b2.2
             melee_attack.scale += 0.2
         }
         
-        //  /b2.2
         sprites.allOfKind(SpriteKind.MiniMenu)[0].destroy()
     })
 }
@@ -97,11 +87,7 @@ function make_damage_number(damage: number, damaged_sprite: Sprite) {
     number_sprite.lifespan = 1500
 }
 
-//  b2.3
-//  /b2.3
-//  gh2
 function spawn_xp(source: Sprite) {
-    //  b2.3
     
     if (randint(1, 10) == 1) {
         magnet_active = true
@@ -112,7 +98,6 @@ function spawn_xp(source: Sprite) {
         })
     }
     
-    //  /b2.3
     let xp = sprites.create(assets.image`jewel`, SpriteKind.xp)
     xp.setPosition(source.x, source.y)
     xp.x += randint(-10, 10)
@@ -121,7 +106,6 @@ function spawn_xp(source: Sprite) {
     xp.lifespan = 10000
 }
 
-//  /gh2
 function damage_enemy(enemy: Sprite, proj: Sprite) {
     let damage = Math.idiv(randint(attack_damage * 0.75, attack_damage * 1.25), 1)
     sprites.changeDataNumberBy(enemy, "hp", -damage)
@@ -129,7 +113,6 @@ function damage_enemy(enemy: Sprite, proj: Sprite) {
     if (sprites.readDataNumber(enemy, "hp") < 1) {
         enemy.destroy()
         info.changeScoreBy(100)
-        //  gh2
         spawn_xp(enemy)
     }
     
@@ -137,12 +120,10 @@ function damage_enemy(enemy: Sprite, proj: Sprite) {
     //  if xp_bar.value == 100:
     //      xp_bar.value = 0
     //      open_level_up_menu()
-    //  /gh2
     pause(500)
 }
 
 sprites.onOverlap(SpriteKind.Enemy, SpriteKind.melee, damage_enemy)
-//  gh2
 sprites.onOverlap(SpriteKind.Player, SpriteKind.xp, function collect_xp(player: Sprite, xp: Sprite) {
     xp_bar.value += 10
     if (xp_bar.value == 100) {
@@ -152,7 +133,6 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.xp, function collect_xp(player: 
     
     xp.destroy()
 })
-//  /gh2 
 sprites.onOverlap(SpriteKind.Enemy, SpriteKind.Projectile, function proj_hit_enemy(enemy: Sprite, proj: Sprite) {
     proj.destroy()
     damage_enemy(enemy, proj)
@@ -205,7 +185,6 @@ game.onUpdateInterval(1000, function spawn_loop() {
     }
     
 })
-//  b2.1
 function ghost_direction() {
     for (let ghost of sprites.allOfKind(SpriteKind.Enemy)) {
         if (ghost.vx > 0) {
@@ -217,8 +196,6 @@ function ghost_direction() {
     }
 }
 
-//  /b2.1
-//  /b2.3
 game.onUpdate(function tick() {
     
     if (Math.abs(witch.vx) != 0) {
@@ -226,10 +203,7 @@ game.onUpdate(function tick() {
     }
     
     melee_attack.setPosition(witch.x, witch.y)
-    //  b2.1
     ghost_direction()
-    //  /b2.1
-    //  b2.3
     for (let xp of sprites.allOfKind(SpriteKind.xp)) {
         if (spriteutils.distanceBetween(xp, witch) < 100 && magnet_active) {
             xp.follow(witch, 200)
